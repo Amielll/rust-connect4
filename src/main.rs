@@ -1,20 +1,22 @@
 mod game;
-use game::*;
+use game::model::*;
+use game::view;
+use game::controller;
 
 fn main() {
     let mut board = Board::new(Colour::Red);
-    board.print_grid();
+    view::print_grid(board.grid);
 
     while board.running {
         let col: u8;
 
-        match board.process_input() {
+        match controller::process_input(board) {
             Ok(num) => col = num,
             _ => panic!(),
         }
          
         board.play_turn(col.into());
-        board.print_grid();
+        view::print_grid(board.grid);
         board.check_win();
 
     }  
