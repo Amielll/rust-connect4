@@ -1,3 +1,7 @@
+use std::time::Duration;
+
+use crossterm::event::{poll, read, Event, KeyCode};
+
 #[derive(Copy, Clone, PartialEq)]
 pub enum Colour {
     Red,
@@ -20,7 +24,7 @@ impl Board {
         }
     }
 
-    pub fn is_valid_move(&self, col: usize) -> bool {
+    fn is_valid_move(&self, col: usize) -> bool {
         // Valid move if specified column in top row is empty
         if col >= 7 { return false }
         self.grid[col].is_none()
@@ -59,6 +63,35 @@ impl Board {
         println!("└───────┘");
     }
 
+    pub fn process_input(&self) -> crossterm::Result<u8> {
+        //TODO: Need to print cursor with respect to location
+        let mut cursor: u8 = 3; // Start the cursor in the center
+
+        loop {  
+            match read()? {
+                Event::Key(key_event) => {
+
+                    match key_event.code {
+                        KeyCode::Left | KeyCode::Char('a') => {
+                            if cursor > 0 { cursor -= 1;}
+                        },
+                        KeyCode::Right | KeyCode::Char('d') => {
+                            if cursor < 6 { cursor += 1;}
+                        }
+                        KeyCode::Enter => {
+                            if self.is_valid_move(cursor.into()) { break; }
+                        },
+                        _ => continue,
+                    }
+                }
+                _ => continue,
+            }
+        }
+
+        Ok(cursor)
+
+    }
+
     pub fn play_turn(&mut self, col: usize) {
         // "Drops" the current player's piece into the grid
         let mut ind: usize = col;
@@ -89,31 +122,28 @@ impl Board {
             // Horizontal check (left to right)
             if i % 7 < 4 { // Ignore 3 rightmost columns
                if self._check_win_helper(i, c, 1, 7) {
-                   self._finish_game(c);
+                   self.finish_game(c);
                 }
             }
-
 
             // Vertical check (this check and the next two are descending)
             if i < 20 { // Ignore bottom 3 rows
                 if self._check_win_helper(i, c, 7, 7) {
-                    self._finish_game(c);
+                    self.finish_game(c);
                 }
             }
-
 
             // Right diagonal check
             if i < 18 { // Last possible index for diag to start
                 if self._check_win_helper(i, c, 8, 0) {
-                    self._finish_game(c);
+                    self.finish_game(c);
                 } 
             }
-
 
             // Left diagonal check
             if i < 21 { // Last possible index for diag to start
                 if self._check_win_helper(i, c, 6, 6) { 
-                    self._finish_game(c); 
+                    self.finish_game(c); 
                 }
             } 
         }
@@ -137,7 +167,7 @@ impl Board {
         win
     }
 
-    fn _finish_game(&mut self, colour: Colour) {
+    fn finish_game(&mut self, colour: Colour) {
         match colour {
             Colour::Red => println!("{} wins!", ansi_term::Colour::Red.paint("Red")),
             Colour::Yellow => println!("{} wins!", ansi_term::Colour::Yellow.paint("Yellow")),
