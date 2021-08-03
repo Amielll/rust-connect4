@@ -1,4 +1,6 @@
 use super::model::Colour;
+use std::io::{Write, stdout};
+use crossterm::{execute, cursor, terminal};
 
 pub fn print_grid(grid: [Option<Colour>; 42]) {
     print!("{esc}c", esc = 27 as char);
@@ -27,4 +29,15 @@ pub fn print_grid(grid: [Option<Colour>; 42]) {
         println!("│"); // Right border
     }
     println!("└───────┘");
+}
+
+pub fn print_cursor(c_loc: usize) {
+    let mut stdout = stdout();  
+ 
+    execute!(stdout, terminal::Clear(terminal::ClearType::CurrentLine)); 
+    for _ in 0..c_loc {
+        write!(stdout, " ");
+    }
+    write!(stdout, " {}\r\n", ansi_term::Colour::Green.paint("^"));
+    execute!(stdout, cursor::MoveUp(1));
 }

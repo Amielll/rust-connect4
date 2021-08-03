@@ -9,7 +9,8 @@ pub enum Colour {
 pub struct Board {
     pub grid: [Option<Colour>; 42], // 7x6 grid
     pub turn: Colour,
-    pub running: bool
+    pub running: bool,
+    pub cursor: usize,
 }
 
 
@@ -18,14 +19,14 @@ impl Board {
         Board {
             grid: [None; 42],
             turn: start_colour,
-            running: true
+            running: true,
+            cursor: 3,  // Place cursor in middle of board
         }
     }
 
-    pub fn is_valid_move(&self, col: usize) -> bool {
-        // Valid move if specified column in top row is empty
-        if col >= 7 { return false }
-        self.grid[col].is_none()
+    pub fn is_valid_move(&self) -> bool {
+        // Valid move if specified column in top row is empty 
+        self.grid[self.cursor].is_none()
     }
 
     pub fn play_turn(&mut self, col: usize) {

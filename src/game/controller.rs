@@ -1,29 +1,25 @@
 use crossterm::event::{read, Event, KeyCode};
+use std::process;
 use super::model::Board;
 
-pub fn process_input(board: Board) -> crossterm::Result<u8> {
-    //TODO: Need to print cursor with respect to location
-    let mut cursor: u8 = 3; // Start the cursor in the center
-
-    loop {
-        for _ in 0..cursor {
-            print!(" ");
-        }
-        println!(" {}", ansi_term::Colour::Green.paint("^"));
-
-        if let Event::Key(key_event) = read()? {
-            match key_event.code {
-                KeyCode::Left | KeyCode::Char('a') => if cursor > 0 { cursor -= 1; },
-                KeyCode::Right | KeyCode::Char('d') => if cursor < 6 { cursor += 1; },
-                KeyCode::Enter => {
-                    if board.is_valid_move(cursor.into()) { break; }
-                },
-                _ => (),
+pub fn process_input(board: &mut Board) -> crossterm::Result<bool> {
+    let mut move_status: bool = false; // Indicates if piece should drop
+    if let Event::Key(key_event) = read()? { 
+        match key_event.code {
+            KeyCode::Left | KeyCode::Char('a') => {
+                if board.cursor > 0 { board.cursor -= 1; } 
+            },
+            KeyCode::Right | KeyCode::Char('d') => {
+                if board.cursor < 6 { board.cursor += 1; } 
             }
-        }
+            KeyCode::Enter => {
+                move_status = board.is_valid_move();  
+            },
+            KeyCode::Char('q') | KeyCode::Esc => { process::exit(0) }
+            _ => (),
+        } 
+    }  
 
-    }
-
-    Ok(cursor)
+    Ok(move_status)
 
 }
