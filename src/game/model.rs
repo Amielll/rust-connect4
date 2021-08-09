@@ -64,7 +64,7 @@ impl Board {
             }
 
             // Vertical check (this check and the next two are descending)
-            if i < 20 { // Ignore bottom 3 rows
+            if i < 21 { // Ignore bottom 3 rows
                 if self._check_win_helper(i, c, 7, 7) {
                     self.finish_game(c);
                 }

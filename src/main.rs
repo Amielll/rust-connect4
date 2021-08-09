@@ -9,16 +9,13 @@ fn main() -> Result<()> {
     view::print_grid(board.grid);
 
     while board.running {
-        terminal::enable_raw_mode()?;
-        view::print_cursor(board.cursor);
-        match controller::process_input(&mut board) {
-            Ok(mv) => {
-                if !mv { continue; }
-            },
-            _ => panic!(),
-        }
-        terminal::disable_raw_mode()?; 
-         
+        terminal::enable_raw_mode()?; 
+        view::print_prompt(board)?;
+        if !controller::process_input(&mut board)? {
+            continue;
+        };
+        terminal::disable_raw_mode()?;  
+
         board.play_turn(board.cursor);
         view::print_grid(board.grid);
         board.check_win();

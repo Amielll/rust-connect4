@@ -1,5 +1,7 @@
 use super::model::Colour;
-use std::io::{Write, stdout};
+use super::model::Board;
+use std::io::{Write, stdout, Error};
+use std::result::Result;
 use crossterm::{execute, cursor, terminal};
 
 pub fn print_grid(grid: [Option<Colour>; 42]) {
@@ -31,13 +33,19 @@ pub fn print_grid(grid: [Option<Colour>; 42]) {
     println!("└───────┘");
 }
 
-pub fn print_cursor(c_loc: usize) {
+
+pub fn print_prompt(board: Board) -> Result<(), Error> {
     let mut stdout = stdout();  
  
-    execute!(stdout, terminal::Clear(terminal::ClearType::CurrentLine)); 
-    for _ in 0..c_loc {
-        write!(stdout, " ");
+    execute!(stdout, terminal::Clear(terminal::ClearType::FromCursorDown)); 
+    for _ in 0..board.cursor {
+        write!(stdout, " ")?;
     }
-    write!(stdout, " {}\r\n", ansi_term::Colour::Green.paint("^"));
-    execute!(stdout, cursor::MoveUp(1));
+    write!(stdout, " {}\r\n", ansi_term::Colour::Green.paint("^"))?;
+    match board.turn {
+        Colour::Red => write!(stdout, "Turn: {}\r\n", ansi_term::Colour::Red.paint("red"))?,
+        Colour::Yellow => write!(stdout, "Turn: {}\r\n", ansi_term::Colour::Yellow.paint("yellow"))?,
+    };
+    execute!(stdout, cursor::MoveUp(2));
+    Ok(())
 }
