@@ -1,27 +1,28 @@
 mod game;
+use crossterm::{terminal, Result};
+use game::controller;
 use game::model::*;
 use game::view;
-use game::controller;
-use crossterm::{Result, terminal};
 
 fn main() -> Result<()> {
     let mut board = Board::new(Colour::Red);
-    view::print_grid(board.grid);
+    view::print_grid(&board.grid);
 
     while board.running {
-        terminal::enable_raw_mode()?; 
-        view::print_prompt(board)?;
+        terminal::enable_raw_mode()?;
+        view::print_prompt(&board)?;
         if !controller::process_input(&mut board)? {
             continue;
         };
-        terminal::disable_raw_mode()?;  
+        terminal::disable_raw_mode()?;
 
-        board.play_turn(board.cursor);
-        view::print_grid(board.grid);
-        board.check_win();
+        board.play_turn();
+        view::print_grid(&board.grid);
+        if let Some(c) = board.check_win() {
+            view::print_gameover(c);
+        }
         board.cursor = 3;
-
-    }  
+    }
 
     Ok(())
 }

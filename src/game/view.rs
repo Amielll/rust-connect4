@@ -1,30 +1,31 @@
-use super::model::Colour;
 use super::model::Board;
-use std::io::{Write, stdout, Error};
-use std::result::Result;
-use crossterm::{execute, cursor, terminal};
+use super::model::Colour;
+use crossterm::{cursor, execute, terminal};
+use std::io::{stdout, Error, Write};
 
-pub fn print_grid(grid: [Option<Colour>; 42]) {
+pub fn print_grid(grid: &[Option<Colour>; 42]) {
     print!("{esc}c", esc = 27 as char);
     println!("┌───────┐");
 
     for row in 0..6 {
         for col in 0..7 {
-            let ind: usize = col + row * 7; 
-            if ind % 7 == 0 { print!("│") } // Left border
+            let ind: usize = col + row * 7;
+            if ind % 7 == 0 {
+                print!("│")
+            } // Left border
 
             match grid[ind] {
-                Some(c) => {
-                    match c {
-                        Colour::Red => {
-                            print!("{}", ansi_term::Colour::Red.paint("O"));
-                        },
-                        Colour::Yellow => {
-                            print!("{}", ansi_term::Colour::Yellow.paint("O"));
-                        },
+                Some(c) => match c {
+                    Colour::Red => {
+                        print!("{}", ansi_term::Colour::Red.paint("O"));
+                    }
+                    Colour::Yellow => {
+                        print!("{}", ansi_term::Colour::Yellow.paint("O"));
                     }
                 },
-                None => { print!(" "); }
+                None => {
+                    print!(" ");
+                }
             }
         }
 
@@ -33,19 +34,29 @@ pub fn print_grid(grid: [Option<Colour>; 42]) {
     println!("└───────┘");
 }
 
+pub fn print_prompt(board: &Board) -> Result<(), Error> {
+    let mut stdout = stdout();
 
-pub fn print_prompt(board: Board) -> Result<(), Error> {
-    let mut stdout = stdout();  
- 
-    execute!(stdout, terminal::Clear(terminal::ClearType::FromCursorDown)); 
+    execute!(stdout, terminal::Clear(terminal::ClearType::FromCursorDown));
     for _ in 0..board.cursor {
         write!(stdout, " ")?;
     }
     write!(stdout, " {}\r\n", ansi_term::Colour::Green.paint("^"))?;
     match board.turn {
         Colour::Red => write!(stdout, "Turn: {}\r\n", ansi_term::Colour::Red.paint("red"))?,
-        Colour::Yellow => write!(stdout, "Turn: {}\r\n", ansi_term::Colour::Yellow.paint("yellow"))?,
+        Colour::Yellow => write!(
+            stdout,
+            "Turn: {}\r\n",
+            ansi_term::Colour::Yellow.paint("yellow")
+        )?,
     };
     execute!(stdout, cursor::MoveUp(2));
     Ok(())
+}
+
+pub fn print_gameover(colour: Colour) {
+    match colour {
+        Colour::Red => println!("{} wins!", ansi_term::Colour::Red.paint("Red")),
+        Colour::Yellow => println!("{} wins!", ansi_term::Colour::Yellow.paint("Yellow")),
+    }
 }
